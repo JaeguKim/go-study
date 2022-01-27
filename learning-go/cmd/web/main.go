@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
+
+	"github.com/alexedwards/scs/v2"
 
 	"github.com/jaegoo-kim/go-course/pkg/config"
 	"github.com/jaegoo-kim/go-course/pkg/handlers"
@@ -11,9 +14,19 @@ import (
 )
 
 const portNumber = ":8080" // can't be changed by other app
+var app config.AppConfig
+var session *scs.SessionManager
 
 func main() {
-	var app config.AppConfig
+	// change this to true when in production
+	app.InProduction = false
+	session = scs.New()
+	session.Lifetime = 24 * time.Hour
+	session.Cookie.Persist = true
+	session.Cookie.SameSite = http.SameSiteLaxMode
+	session.Cookie.Secure = app.InProduction
+	app.Session = session
+
 	tc, err := render.CreateTemplateCache()
 	if err != nil {
 		log.Fatal("cannot create template cache")
